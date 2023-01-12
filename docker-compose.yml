@@ -1,0 +1,58 @@
+services:
+    api:
+        build:
+            context: .
+            dockerfile: /back/Presentation/Dockerfile
+        ports:
+            - 81:81
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+        volumes:
+            - "/app/Presentation/bin"
+            - "/app/Presentation/obj"
+            - './back/Presentation/:/app/Presentation'
+        depends_on:
+            - rabbit
+            - mongo
+    
+    eventbushandler:
+        build:
+            context: .
+            dockerfile: /back/EventBusHandler/Dockerfile
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+        volumes:
+            - "/app/EventBusHandler/bin"
+            - "/app/EventBusHandler/obj"
+            - "./back/EventBusHandler/:/app/EventBusHandler"
+        depends_on:
+            - rabbit
+            - mongo
+    
+    front:
+        build:
+            context: .
+            dockerfile: /front/Dockerfile
+        ports:
+            - 80:80
+        environment:
+            - PORT=80
+            - WATCHPACK_POLLING=true
+        volumes:
+            - './front/:/app/'
+            - "/app/node_modules"
+        depends_on:
+            - api
+    
+    rabbit:
+        image: rabbitmq:3-management
+        ports:
+            - 5671:5671
+            - 5672:5672
+            - 15672:15672
+    
+    mongo:
+        image: mongo
+        ports:
+            - 27017:27017
+    
