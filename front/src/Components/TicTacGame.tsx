@@ -1,4 +1,4 @@
-﻿import {useEffect, useMemo, useState} from "react";
+﻿import {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {Cell} from "./Cell";
 import {Figure, Game, GameStatus} from "../Entities/Game"
@@ -55,13 +55,15 @@ export const TicTacGame = () => {
 
     const yourMove = whoseMove(game) === figure;
 
-    const onPlaceFigure = useMemo(() =>
-        (x: number, y: number, current: Figure) => {
-            if (current === Figure.None && yourMove) {
-                const userId = localStorage.getItem('userId');
-                connection?.send("PlaceFigure", x, y, id, userId).catch(e => console.log(e));
-            }
-        }, [yourMove, connection]);
+    const onPlaceFigure = (x: number, y: number, current: Figure) => {
+        console.log(current, yourMove, game.playerX, game.playerO)
+        console.log(current === Figure.None && yourMove && game.playerX && game.playerO)
+        if (current === Figure.None && yourMove && game.playerX && game.playerO) {
+            const userId = localStorage.getItem('userId');
+            console.log(x, y, id, userId);
+            connection?.send("PlaceFigure", x, y, id, userId).catch(e => console.log(e));
+        }
+    }
 
     return (
         <>

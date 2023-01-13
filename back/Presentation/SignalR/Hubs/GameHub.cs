@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Context;
 using Presentation.Domain;
@@ -14,13 +13,11 @@ public class GameHub : Hub<IGameClient>
 {
     private readonly GameUpdateProducer _gameUpdateProducer;
     private readonly PostgresDbContext _dbContext;
-    private readonly UserManager<User> _userManager;
 
-    public GameHub(GameUpdateProducer gameUpdateProducer, PostgresDbContext dbContext, UserManager<User> userManager)
+    public GameHub(GameUpdateProducer gameUpdateProducer, PostgresDbContext dbContext)
     {
         _gameUpdateProducer = gameUpdateProducer;
         _dbContext = dbContext;
-        _userManager = userManager;
     }
 
     public async Task Join(Guid gameId, Guid userId, Figure player)
@@ -45,11 +42,14 @@ public class GameHub : Hub<IGameClient>
                 }
             }
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
-            await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
-
             _dbContext.Games.Update(game);
             await _dbContext.SaveChangesAsync();
+        }
+
+        if (game is { } && (game.PlayerX == userId || game.PlayerO == userId))
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
+            await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
         }
     }
 
@@ -68,9 +68,12 @@ public class GameHub : Hub<IGameClient>
     {
         var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
 
-        if (game is null or { Status: GameStatus.Finished } || game[first, second] != Figure.None) return;
+        Console.WriteLine(game[first, second]);
         
+        if (game is null or { Status: GameStatus.Finished } || game[first, second] != Figure.None) return;
+
         var whoseMove = GameDomain.WhoseMove(game);
+        Console.WriteLine(whoseMove);
         switch (whoseMove)
         {
             case Figure.X:
@@ -85,14 +88,25 @@ public class GameHub : Hub<IGameClient>
             default:
                 return;
         }
+        Console.WriteLine(whoseMove);
 
         game[first, second] = whoseMove;
+        game.Status = GameStatus.Started;
 
         if (GameDomain.IsGameFinished(game))
         {
             game.Status = GameStatus.Finished;
-            var winner = GameDomain.IsSomeoneWon(game);
-            await Clients.Group(gameId.ToString()).GameFinish(winner);
+            var winnerFigure = GameDomain.IsSomeoneWon(game);
+            await Clients.Group(gameId.ToString()).GameFinish(winnerFigure);
+            if (winnerFigure != Figure.None)
+            {
+                var winner = await _dbContext.Users
+                    .FirstAsync(u => u.Id == (winnerFigure == Figure.X ? game.PlayerX : game.PlayerO));
+                var looser = await _dbContext.Users
+                    .FirstAsync(u => u.Id == (winnerFigure == Figure.X ? game.PlayerO : game.PlayerX));
+                winner.Rating += 3;
+                looser.Rating -= 1;
+            }
         }
 
         await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
