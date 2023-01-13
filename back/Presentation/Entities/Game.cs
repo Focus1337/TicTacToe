@@ -10,9 +10,18 @@ public enum Figure
     O = 2,
 }
 
+public enum GameStatus
+{
+    New = 0,
+    Started = 1,
+    Finished = 2,
+}
+
 public class Game
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+
+    public GameStatus Status { get; set; } = GameStatus.New;
 
     public Figure C00 { get; set; } = Figure.None;
     public Figure C01 { get; set; } = Figure.None;

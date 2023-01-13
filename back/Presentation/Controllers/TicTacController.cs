@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Context;
@@ -26,9 +27,26 @@ public class TicTacController : ControllerBase
         return Ok(game.Id);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetGames()
+    public record GetGamesDto(int Page);
+
+    [HttpGet, OpenIdDictAuthorize]
+    public async Task<IActionResult> GetGames([FromQuery]GetGamesDto getGamesDto)
     {
-        return Ok(await _postgresDbContext.Games.Select(g => new GameDto(g)).ToListAsync());
+        const int pageLength = 5;
+        return Ok(await _postgresDbContext.Games
+            .Where(g => g.Status != GameStatus.Finished)
+            .OrderBy(g => g.Status)
+            .Skip(getGamesDto.Page * pageLength)
+            .Take(pageLength)
+            .Select(g => new GameDto(g))
+            .ToListAsync());
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAll()
+    {
+         _postgresDbContext.Games.RemoveRange(_postgresDbContext.Games);
+         await _postgresDbContext.SaveChangesAsync();
+         return Ok();
     }
 }
