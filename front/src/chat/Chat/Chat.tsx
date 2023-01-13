@@ -6,7 +6,11 @@ import ChatInput from "./ChatInput/ChatInput";
 import IMessage from "../entities/IMessage";
 import axios from "../chatAxios";
 
-export default function Chat() {
+type Props = {
+    gameId: string;
+}
+
+export default function Chat(props: Props) {
     const [chat, setChat] = useState<IMessage[]>([]);
     const [connection, setConnection] = useState<null | HubConnection>(null);
 
@@ -25,7 +29,8 @@ export default function Chat() {
                 .start()
                 .then(async () => {
                     connection.on('ReceiveMessage', (message: IMessage) => {
-                        setChat(prev => [...prev, message]);
+                        if (message.gameId === props.gameId)
+                            setChat(prev => [...prev, message]);
                     });
                 })
                 .catch(error => console.log('Connection failed: ', error));
@@ -33,15 +38,18 @@ export default function Chat() {
     }, [connection]);
 
     useEffect(() => {
-        axios.get<IMessage[]>('api/messages').then(res => setChat(res.data));
+        axios.get<IMessage[]>(`api/messages?gameId=${props.gameId}`).then(res => setChat(res.data));
     }, [])
 
-    const sendMessage = async (userName: string, text: string) => {
+    const userName = localStorage.getItem('userName');
+
+    const sendMessage = async (text: string) => {
         const chatMessage: IMessage = {
             id: uuidv4(),
-            userName: userName,
+            userName: userName || '',
             text: text,
-            dateTime: new Date()
+            dateTime: new Date(),
+            gameId: props.gameId,
         };
 
         if (connection)

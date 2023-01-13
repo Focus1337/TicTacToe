@@ -15,4 +15,5 @@ public class Message
 
     [Required]
     public string UserName { get; set; } = null!;
+    public Guid GameId { get; set; }
 }

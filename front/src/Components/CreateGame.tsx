@@ -14,7 +14,7 @@ export const CreateGame = () => {
     }
 
     return (<>
-        <input ref={maxRating} placeholder={'Max rating'}/>
+        <input style={{color: 'black'}} ref={maxRating} placeholder={'Max rating'}/>
         <button onClick={onCreateNew}>Create and join</button>
     </>)
 }

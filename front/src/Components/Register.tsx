@@ -31,11 +31,11 @@ export const Register = () => {
     }
 
     return (
-        <>
+        <div style={{color: 'black', display: 'flex', flexDirection: 'column'}}>
             <input ref={username} placeholder={'username'}/>
             <input ref={pass1} placeholder={'password'}/>
             <input ref={pass2} placeholder={'repeat password'}/>
             <button onClick={onRegister}>register</button>
-        </>
+        </div>
     )
 }

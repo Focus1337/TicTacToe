@@ -96,7 +96,7 @@ export const TicTacGame = () => {
                 </div>
                 {figure && game.status === GameStatus.Finished && <button onClick={onRestartGame}>Restart game</button>}
             </div>
-            <Chat/>
+            <Chat gameId={game.id}/>
         </div>
     );
 }

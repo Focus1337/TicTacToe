@@ -29,7 +29,7 @@ public class UserController : ControllerBase
 
         var user = await _userManager.FindByNameAsync(identity.Name) ?? throw new Exception("User name not found");
 
-        return Ok(new { user.Id, user.Rating });
+        return Ok(new { user.Id, user.Rating, user.UserName });
     }
 
     [HttpGet("rating")]

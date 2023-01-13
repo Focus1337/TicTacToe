@@ -1,28 +1,22 @@
 import React, {useState} from 'react';
 
 interface ChatInputProps {
-    sendMessage: (user: string, message: string) => void;
+    sendMessage: (message: string) => void;
 }
 
 export default function ChatInput({sendMessage}: ChatInputProps) {
-    const [user, setUser] = useState('');
     const [message, setMessage] = useState('');
 
     const submitHandler = (event: React.FormEvent) => {
         event.preventDefault();
 
-        const isUserProvided = user && user !== '';
         const isMessageProvided = message && message !== '';
 
-        if (isUserProvided && isMessageProvided) {
-            sendMessage(user, message);
+        if (isMessageProvided) {
+            sendMessage(message);
         } else {
             alert('Please insert an user and a message.');
         }
-    }
-
-    const userUpdateHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setUser(event.target.value);
     }
 
     const messageUpdateHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,14 +25,6 @@ export default function ChatInput({sendMessage}: ChatInputProps) {
 
     return (
         <form onSubmit={submitHandler} className="bg-gray-300 p-1">
-            <input
-                id="user"
-                name="user"
-                value={user}
-                onChange={userUpdateHandler}
-                className="flex items-center h-7 w-full rounded px-2 text-sm mb-1"
-                placeholder="username"
-            />
             <input
                 type="text"
                 id="message"

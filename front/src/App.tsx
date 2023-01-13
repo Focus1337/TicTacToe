@@ -1,11 +1,10 @@
 import React from 'react';
 import './App.css';
 import {BrowserRouter, Link, Navigate, Route, Routes} from 'react-router-dom';
-import {GameEnd, GetIn, TicTacGame} from './Components';
+import {GameEnd, TicTacGame} from './Components';
 import {Register} from "./Components/Register";
 import {Login} from "./Components/Login";
 import {GamesList} from "./Components/GamesList";
-import axios from "./axios";
 import {Rating} from "./Components/Rating";
 import { CreateGame } from './Components/CreateGame';
 
@@ -38,11 +37,10 @@ function App() {
                 </div>
                 <div className="Header">
                     <Routes>
-                        <Route path={'/'} element={<Navigate replace to={'/getIn'}/>}/>
+                        <Route path={'/'} element={<Navigate replace to={'/list'}/>}/>
                         <Route path={'/register'} element={<Register/>}/>
                         <Route path={'/login'} element={<Login/>}/>
                         <Route path={'/list'} element={<GamesList/>}/>
-                        <Route path={'/getIn'} element={<GetIn/>}/>
                         <Route path={'/rating'} element={<Rating/>}/>
                         <Route path={'/create'} element={<CreateGame/>}/>
                         <Route path={'/gameEnd/:winner'} element={<GameEnd/>}/>

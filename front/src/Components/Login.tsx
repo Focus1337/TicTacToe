@@ -34,6 +34,7 @@ export const Login = () => {
         const userData = (await axios.get('User/Me', {headers: {authorization: `Bearer ${jwt}`}})).data;
         localStorage.setItem('userId', userData.id);
         localStorage.setItem('userRating', userData.rating);
+        localStorage.setItem('userName', userData.userName);
         window.location.replace('/');
     }
 
@@ -42,12 +43,12 @@ export const Login = () => {
     }
 
     return (
-        <>
+        <div style={{color: 'black', display: 'flex', flexDirection: 'column'}}>
             <input ref={username} placeholder={'username'}/>
             <input ref={pass} placeholder={'password'}/>
             <button onClick={onLogin}>login</button>
             <br/>
             <button onClick={onGoToRegister}>register</button>
-        </>
+        </div>
     )
 }

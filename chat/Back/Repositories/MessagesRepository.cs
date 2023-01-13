@@ -10,8 +10,9 @@ public class MessagesRepository
 
     public MessagesRepository(AppDbContext dbContext) => _dbContext = dbContext;
 
-    public async Task<List<Message>> GetLast(int count) =>
+    public async Task<List<Message>> GetLast(Guid gameId, int count) =>
         await _dbContext.Messages
+            .Where(m => m.GameId == gameId)
             .OrderBy(m => m.DateTime)
             .Skip(Math.Max(_dbContext.Messages.Count() - count, 0))
             .Take(count)

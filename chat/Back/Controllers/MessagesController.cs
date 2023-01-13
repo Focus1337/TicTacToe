@@ -14,5 +14,6 @@ public class MessagesController : ControllerBase
         _messagesService = messagesService;
 
     [HttpGet]
-    public async Task<IActionResult> GetLastHundred() => new JsonResult(await _messagesService.GetLast(100));
+    public async Task<IActionResult> GetLastHundred([FromQuery] Guid gameId) =>
+        new JsonResult(await _messagesService.GetLast(gameId, 100));
 }
