@@ -4,10 +4,13 @@ using Presentation.Entities;
 
 namespace Presentation.Context;
 
-public class DbContext : IdentityDbContext<User>
+public class PostgresDbContext : IdentityDbContext<User>
 {
-    public DbContext(DbContextOptions<DbContext> options) : base(options)
-    { }
+    public PostgresDbContext(DbContextOptions<PostgresDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<Game> Games { get; set; }
 
     // protected override void OnModelCreating(ModelBuilder builder)
     // {

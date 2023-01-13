@@ -11,9 +11,9 @@ public static class GameDomain
 
         var xCount = 0;
         var oCount = 0;
-        foreach (var line in game.Cells)
-        foreach (var f in line)
-            switch (f)
+        for (var f = 0; f < 3; ++f)
+        for (var s = 0; s < 3; ++s)
+            switch (game[f, s])
             {
                 case Figure.X:
                     xCount++;
@@ -33,21 +33,21 @@ public static class GameDomain
     {
         for (var i = 0; i < 3; ++i)
         {
-            if (game.Cells[i][0] != Figure.None && game.Cells[i][0] == game.Cells[i][1] &&
-                game.Cells[i][0] == game.Cells[i][2])
-                return game.Cells[i][0];
-            if (game.Cells[0][i] != Figure.None && game.Cells[0][i] == game.Cells[1][i] &&
-                game.Cells[0][i] == game.Cells[2][i])
-                return game.Cells[0][i];
+            if (game[i, 0] != Figure.None && game[i, 0] == game[i, 1] &&
+                game[i, 0] == game[i, 2])
+                return game[i, 0];
+            if (game[0, i] != Figure.None && game[0, i] == game[1, i] &&
+                game[0, i] == game[2, i])
+                return game[0, i];
         }
 
-        if (game.Cells[0][0] != Figure.None && game.Cells[0][0] == game.Cells[1][1] &&
-            game.Cells[0][0] == game.Cells[2][2])
-            return game.Cells[0][0];
+        if (game[0, 0] != Figure.None && game[0, 0] == game[1, 1] &&
+            game[0, 0] == game[2, 2])
+            return game[0, 0];
 
-        if (game.Cells[0][2] != Figure.None && game.Cells[0][2] == game.Cells[1][1] &&
-            game.Cells[0][2] == game.Cells[2][0])
-            return game.Cells[0][2];
+        if (game[0, 2] != Figure.None && game[0, 2] == game[1, 1] &&
+            game[0, 2] == game[2, 0])
+            return game[0, 2];
 
         return Figure.None;
     }
@@ -57,10 +57,10 @@ public static class GameDomain
         if (IsSomeoneWon(game) != Figure.None)
             return true;
         var emptyCellExists = false;
-        foreach (var line in game.Cells)
-        foreach (var f in line)
+        for (var f = 0; f < 3; ++f)
+        for (var s = 0; s < 3; ++s)
         {
-            if (f == Figure.None)
+            if (game[f, s] == Figure.None)
                 emptyCellExists = true;
         }
 

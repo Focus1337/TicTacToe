@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
-using Presentation.Data;
+using Presentation.Context;
 using Presentation.Entities;
 using Presentation.RabbitMq;
 using Presentation.SignalR.Hubs;
@@ -13,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddSingleton<GameUpdateProducer>();
-builder.Services.AddSingleton<MongoDbContext>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -28,14 +27,14 @@ builder.Services.AddAuthentication(options =>
     .AddJwtBearer(options => options.ClaimsIssuer = JwtBearerDefaults.AuthenticationScheme);
 
 builder.Services.AddAuthorization();
-builder.Services.AddDbContext<DbContext>(options =>
+builder.Services.AddDbContext<PostgresDbContext>(options =>
     {
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DbConfiguration"),
+        options.UseNpgsql("Host=postgres;Port=5432;Username=testuser;Password=testpass;Database=testDb;",
             action => action.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName));
         options.UseOpenIddict();
     })
     .AddIdentity<User, IdentityRole>(options => options.User.RequireUniqueEmail = true)
-    .AddEntityFrameworkStores<DbContext>()
+    .AddEntityFrameworkStores<PostgresDbContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(options =>
@@ -48,7 +47,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Services.AddOpenIddict()
     .AddCore(options =>
         options.UseEntityFrameworkCore()
-            .UseDbContext<DbContext>())
+            .UseDbContext<PostgresDbContext>())
     .AddServer(options =>
     {
         options
@@ -73,6 +72,12 @@ builder.Services.AddOpenIddict()
 builder.Services.AddSignalR(opt => opt.EnableDetailedErrors = true);
 
 var app = builder.Build();
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var context = scope.ServiceProvider.GetService<PostgresDbContext>();
+    await context!.Database.MigrateAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

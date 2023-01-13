@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Data;
+using Microsoft.EntityFrameworkCore;
+using Presentation.Context;
 using Presentation.Entities;
 
 namespace Presentation.Controllers;
@@ -8,16 +9,25 @@ namespace Presentation.Controllers;
 [Route("[controller]")]
 public class TicTacController : ControllerBase
 {
-    private readonly MongoDbContext _dbContext;
+    private readonly PostgresDbContext _postgresDbContext;
 
-    public TicTacController(MongoDbContext dbContext) =>
-        _dbContext = dbContext;
+    public TicTacController(PostgresDbContext postgresDbContext)
+    {
+        _postgresDbContext = postgresDbContext;
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreateGame()
     {
-        var game = Game.CreateNew();
-        await _dbContext.GetGameCollection().InsertOneAsync(game);
+        var game = new Game();
+        await _postgresDbContext.Games.AddAsync(game);
+        await _postgresDbContext.SaveChangesAsync();
         return Ok(game.Id);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetGames()
+    {
+        return Ok(await _postgresDbContext.Games.ToListAsync());
     }
 }
