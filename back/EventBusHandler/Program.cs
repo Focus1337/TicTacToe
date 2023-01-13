@@ -1,12 +1,32 @@
+using EventBusHandler.Data;
 using EventBusHandler.HostedServices;
+using EventBusHandler.Options;
 using EventBusHandler.RabbitMq;
-using MongoDbContext = EventBusHandler.Data.MongoDbContext;
+using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<MongoDbContext>();
-builder.Services.AddSingleton<GameUpdateConsumer>();
-builder.Services.AddHostedService<GameUpdateBusHandler>();
+var services = builder.Services;
+
+services
+    .Configure<DbOptions>(
+        builder.Configuration.GetSection(DbOptions.DbConfiguration))
+    .Configure<RabbitOptions>(
+        builder.Configuration.GetSection(RabbitOptions.RabbitConfiguration));
+
+var rabbitOptions = builder.Configuration.GetSection(RabbitOptions.RabbitConfiguration).Get<RabbitOptions>();
+var dbOptions = builder.Configuration.GetSection(DbOptions.DbConfiguration).Get<DbOptions>();
+
+services.AddSingleton(new ConnectionFactory
+{
+    HostName = rabbitOptions!.HostName,
+    // DispatchConsumersAsync = true
+});
+
+services.AddSingleton<GameUpdateConsumer>();
+services.AddHostedService<GameUpdateBusHandler>();
+services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbOptions!.ConnectionString));
 
 var app = builder.Build();
 

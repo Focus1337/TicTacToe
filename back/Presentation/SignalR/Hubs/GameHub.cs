@@ -45,8 +45,9 @@ public class GameHub : Hub<IGameClient>
             if (game is { Status: GameStatus.New, PlayerX: { }, PlayerO: { } })
                 game.Status = GameStatus.Started;
 
-            _dbContext.Games.Update(game);
-            await _dbContext.SaveChangesAsync();
+            // _dbContext.Games.Update(game);
+            // await _dbContext.SaveChangesAsync();
+            _gameUpdateProducer.ProduceGameUpdateCommand(game);
         }
 
         if (game is { } && (game.PlayerX == userId || game.PlayerO == userId))
@@ -110,14 +111,18 @@ public class GameHub : Hub<IGameClient>
                     .FirstAsync(u => u.Id == (winnerFigure == Figure.X ? game.PlayerO : game.PlayerX));
                 winner.Rating += 3;
                 looser.Rating -= 1;
+                
+                _dbContext.Users.Update(winner);
+                _dbContext.Users.Update(looser);
+                await _dbContext.SaveChangesAsync();
             }
         }
 
         await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
 
-        //_gameUpdateProducer.ProduceGameUpdateCommand(game);
-        _dbContext.Games.Update(game);
-        await _dbContext.SaveChangesAsync();
+        _gameUpdateProducer.ProduceGameUpdateCommand(game);
+        // _dbContext.Games.Update(game);
+        // await _dbContext.SaveChangesAsync();
     }
 
     public async Task Restart(Guid gameId)
