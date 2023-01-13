@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Context;
 using Presentation.Domain;
@@ -13,14 +15,29 @@ public class GameHub : Hub<IGameClient>
 {
     private readonly GameUpdateProducer _gameUpdateProducer;
     private readonly PostgresDbContext _dbContext;
+    private readonly UserManager<User> _userManager;
 
-    public GameHub(GameUpdateProducer gameUpdateProducer, PostgresDbContext dbContext)
+    public GameHub(GameUpdateProducer gameUpdateProducer, PostgresDbContext dbContext, UserManager<User> userManager)
     {
         _gameUpdateProducer = gameUpdateProducer;
         _dbContext = dbContext;
+        _userManager = userManager;
     }
 
-    public async Task Enter(Guid gameId)
+    [Authorize]
+    public async Task Join(Guid gameId)
+    {
+        var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
+
+        if (game is { Status: GameStatus.New } and ({ PlayerO: null } or { PlayerX: null }))
+        {
+            var user = await _userManager.GetUserAsync(Context.User!);
+            await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
+            await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
+        }
+    }
+
+    public async Task Watch(Guid gameId)
     {
         var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
 

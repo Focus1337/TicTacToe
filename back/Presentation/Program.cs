@@ -66,7 +66,7 @@ builder.Services.AddDbContext<PostgresDbContext>(options =>
             action => action.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName));
         options.UseOpenIddict();
     })
-    .AddIdentity<User, IdentityRole>(options =>
+    .AddIdentity<User, IdentityRole<Guid>>(options =>
     {
         options.Password.RequireDigit = false;
         options.Password.RequiredLength = 1;

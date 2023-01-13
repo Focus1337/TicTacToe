@@ -1,7 +1,7 @@
 ﻿import {useEffect, useMemo, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {Cell} from "./Cell";
-import {Figure, Game} from "../Entities/Game"
+import {Figure, Game, GameStatus} from "../Entities/Game"
 import {whoseMove} from "../Domain/gameDomain";
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {BASE_URL} from "../config";
@@ -11,7 +11,11 @@ export const TicTacGame = () => {
     const {figure, id} = useParams();
     const navigate = useNavigate();
 
-    const [game, setGame] = useState<Game>({cells: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], id: id || ''});
+    const [game, setGame] = useState<Game>({
+        cells: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        id: id || '',
+        status: GameStatus.New
+    });
     const [connection, setConnection] = useState<null | HubConnection>(null);
 
     useEffect(() => {

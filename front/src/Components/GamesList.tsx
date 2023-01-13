@@ -1,7 +1,7 @@
 ﻿import {useRef, useState} from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import axios from "../axios";
-import {Game} from "../Entities/Game";
+import {Game, GameStatus} from "../Entities/Game";
 
 export const GamesList = () => {
     const [games, setGames] = useState<Game[]>([]);
@@ -19,7 +19,11 @@ export const GamesList = () => {
 
     return (
         <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore}>
-            {games?.map(g => <p key={g.id}>{g.id}</p>)}
+            {games?.map(g => <div key={g.id} style={{display: 'flex'}}>
+                <p>{g.id}</p>
+                <button>Watch</button>
+                {g.status === GameStatus.New && <button>Join</button>}
+            </div>)}
         </InfiniteScroll>
     )
 }

@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Entities;
 
 namespace Presentation.Context;
 
-public class PostgresDbContext : IdentityDbContext<User>
+public class PostgresDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public PostgresDbContext(DbContextOptions<PostgresDbContext> options) : base(options)
     {
