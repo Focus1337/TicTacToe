@@ -13,7 +13,7 @@ public class UserController : ControllerBase
     public UserController(UserManager<User> userManager) =>
         _userManager = userManager;
 
-    [HttpGet]
+    [HttpGet("Me")]
     public async Task<Guid> Me()
     {
         var identity = HttpContext.User.Identity;

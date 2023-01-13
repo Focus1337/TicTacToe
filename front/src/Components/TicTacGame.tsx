@@ -6,6 +6,7 @@ import {whoseMove} from "../Domain/gameDomain";
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {BASE_URL} from "../config";
 import {WhoWon} from "./GameEnd";
+import axios from "../axios";
 
 export const TicTacGame = () => {
     const {figure, id} = useParams();
@@ -39,8 +40,13 @@ export const TicTacGame = () => {
                     connection.on("GameFinish", (winner: Figure) => {
                         navigate(`/gameEnd/${winner === Figure.None ? WhoWon.Tie : winner === (figure === 'x' ? Figure.X : Figure.O) ? WhoWon.Me : WhoWon.Opponent}`)
                     })
-                    if (id)
+                    if (id) {
+                        const userId = (await axios.get('User/Me')).data;
+                        console.log(userId);
+                        localStorage.setItem("userId", userId);
+                        
                         connection.invoke(figure === undefined ? "Watch" : "Join", id);
+                    }
                 })
                 .catch(error => console.log('Connection failed: ', error));
         }
