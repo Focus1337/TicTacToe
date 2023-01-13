@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Context;
+using Presentation.Dto;
 using Presentation.Entities;
 
 namespace Presentation.Controllers;
@@ -28,6 +29,6 @@ public class TicTacController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetGames()
     {
-        return Ok(await _postgresDbContext.Games.ToListAsync());
+        return Ok(await _postgresDbContext.Games.Select(g => new GameDto(g)).ToListAsync());
     }
 }

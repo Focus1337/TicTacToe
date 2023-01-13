@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Presentation.Context;
 using Presentation.Domain;
+using Presentation.Dto;
 using Presentation.Entities;
 using Presentation.RabbitMq;
 using Presentation.SignalR.Clients;
@@ -26,7 +27,7 @@ public class GameHub : Hub<IGameClient>
         if (game is { })
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
-            await Clients.Group(gameId.ToString()).UpdateGame(game);
+            await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
         }
     }
 
@@ -40,7 +41,7 @@ public class GameHub : Hub<IGameClient>
             return;
 
         game[first, second] = figure;
-        await Clients.Group(gameId.ToString()).UpdateGame(game);
+        await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
 
         if (GameDomain.IsGameFinished(game))
         {
@@ -48,6 +49,8 @@ public class GameHub : Hub<IGameClient>
             await Clients.Group(gameId.ToString()).GameFinish(winner);
         }
 
-        _gameUpdateProducer.ProduceGameUpdateCommand(game);
+        //_gameUpdateProducer.ProduceGameUpdateCommand(game);
+        _dbContext.Games.Update(game);
+        await _dbContext.SaveChangesAsync();
     }
 }
