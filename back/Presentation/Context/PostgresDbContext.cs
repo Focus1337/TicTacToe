@@ -9,14 +9,9 @@ public class PostgresDbContext : IdentityDbContext<User, IdentityRole<Guid>, Gui
 {
     public PostgresDbContext(DbContextOptions<PostgresDbContext> options) : base(options)
     {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
     }
 
-    public DbSet<Game> Games { get; set; }
-
-    // protected override void OnModelCreating(ModelBuilder builder)
-    // {
-    //     base.OnModelCreating(builder);
-    //     // builder
-    //     //     .CreateUsers();
-    // }
+    public DbSet<Game> Games { get; set; } = null!;
 }

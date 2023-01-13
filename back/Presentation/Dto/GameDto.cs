@@ -8,6 +8,11 @@ public class GameDto
     public Figure[][] Cells { get; set; }
     public GameStatus Status { get; set; }
 
+    public Guid? PlayerX { get; set; }
+    public Guid? PlayerO { get; set; }
+
+    public DateTime CreatedDateTime { get; set; }
+
     public GameDto(Game game)
     {
         this.Id = game.Id;

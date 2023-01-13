@@ -9,17 +9,18 @@ namespace Presentation.Controllers;
 public class UserController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
-    private readonly SignInManager<User> _signInManager;
 
-    public UserController(SignInManager<User> signInManager, UserManager<User> userManager)
-    {
-        _signInManager = signInManager;
+    public UserController(UserManager<User> userManager) =>
         _userManager = userManager;
-    }
 
-    // [HttpGet]
-    // public async string Me()
-    // {
-    //     // 
-    // }
+    [HttpGet]
+    public async Task<Guid> Me()
+    {
+        var identity = HttpContext.User.Identity;
+
+        if (identity?.Name is null)
+            throw new Exception("User is not logged in");
+
+        return (await _userManager.FindByNameAsync(identity.Name) ?? throw new Exception("User name not found")).Id;
+    }
 }
