@@ -68,6 +68,8 @@ services:
             - 82:82
         volumes:
             - './chat/Back/:/app/'
+            - "/app/bin"
+            - "/app/obj"
         external_links:
             - rabbit:rabbitmq
             - postgres:database
@@ -77,6 +79,8 @@ services:
             context: ./chat/MessageReceiverAndDbWriter
         volumes:
             - './chat/MessageReceiverAndDbWriter/:/app/'
+            - "/app/bin"
+            - "/app/obj"
         external_links:
             - rabbit:rabbitmq
             - postgres:database
