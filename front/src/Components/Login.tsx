@@ -20,9 +20,9 @@ export const Login = () => {
             alert('username should be at least 6 symbols length');
             return;
         }
-        const jwt = '';
+        const jwt = 'qwe';
         localStorage.setItem('jwt', jwt);
-        navigate('/');
+        window.location.replace('/');
     }
     
     const onGoToRegister = () => {

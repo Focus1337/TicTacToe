@@ -33,7 +33,15 @@ builder.Services.AddDbContext<PostgresDbContext>(options =>
             action => action.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName));
         options.UseOpenIddict();
     })
-    .AddIdentity<User, IdentityRole>()
+    .AddIdentity<User, IdentityRole>(options =>
+    {
+        options.Password.RequireDigit = false;
+        options.Password.RequiredLength = 1;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequiredUniqueChars = 0;
+        options.Password.RequireNonAlphanumeric = false;
+    })
     .AddEntityFrameworkStores<PostgresDbContext>()
     .AddDefaultTokenProviders();
 

@@ -1,9 +1,6 @@
 ﻿import {useRef} from "react";
-import {useNavigate} from "react-router-dom";
 
 export const Register = () => {
-    const navigate = useNavigate();
-    
     const username = useRef<HTMLInputElement>(null);
     const pass1 = useRef<HTMLInputElement>(null);
     const pass2 = useRef<HTMLInputElement>(null);
@@ -29,7 +26,7 @@ export const Register = () => {
         }
         const jwt = '';
         localStorage.setItem('jwt', jwt);
-        navigate('/');
+        window.location.replace('/');
     }
     
     return (

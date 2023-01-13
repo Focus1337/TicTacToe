@@ -30,13 +30,14 @@ public class AuthController : ControllerBase
 
         var user = new User
         {
-            Username = userDto.Username,
+            UserName = userDto.Username,
         };
 
         if (userDto.Password != userDto.RepeatPassword) 
             return BadRequest();
         
         var result = await _userManager.CreateAsync(user, userDto.Password);
+        Console.WriteLine(result.Errors.FirstOrDefault()?.Description);
         return result.Succeeded
             ? Ok()
             : Forbid(new AuthenticationProperties(result.Errors.ToDictionary(error => error.Code,
