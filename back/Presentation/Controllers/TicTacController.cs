@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Context;
@@ -8,7 +7,7 @@ using Presentation.Entities;
 namespace Presentation.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("[controller]"), OpenIdDictAuthorize]
 public class TicTacController : ControllerBase
 {
     private readonly PostgresDbContext _postgresDbContext;

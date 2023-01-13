@@ -1,7 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
@@ -25,22 +24,22 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Register")]
-    public async Task<IActionResult> Register(UserDto userDto)
+    public async Task<IActionResult> Register(RegisterUserDto registerUserDto)
     {
         if (!ModelState.IsValid) return BadRequest();
 
         var user = new User
         {
-            UserName = userDto.Username,
+            UserName = registerUserDto.Username,
         };
         
-        if (await _userManager.FindByNameAsync(userDto.Username) is not null)
+        if (await _userManager.FindByNameAsync(registerUserDto.Username) is not null)
             return BadRequest("User with same Name already exists");
 
-        if (userDto.Password != userDto.RepeatPassword) 
+        if (registerUserDto.Password != registerUserDto.RepeatPassword) 
             return BadRequest("Mismatch of passwords");
         
-        var result = await _userManager.CreateAsync(user, userDto.Password);
+        var result = await _userManager.CreateAsync(user, registerUserDto.Password);
         Console.WriteLine(result.Errors.FirstOrDefault()?.Description);
         return result.Succeeded
             ? Ok()
