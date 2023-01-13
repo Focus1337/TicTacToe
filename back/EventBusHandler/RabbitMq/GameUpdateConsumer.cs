@@ -48,13 +48,19 @@ public class GameUpdateConsumer
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            var game = await context.Games.FirstOrDefaultAsync(x => x.Id == body.Id);
-            
-           // game.
-            
-            context.Games.Update(body);
-            await context.SaveChangesAsync();
-            
+            // var game = await context.Games.FirstOrDefaultAsync(x => x.Id == body.Id);
+
+            // game.
+            if (await context.Games.FindAsync(body.Id) is { } game)
+            {
+                context.Entry(game).CurrentValues.SetValues(body);
+
+                await context.SaveChangesAsync();
+            }
+
+            // context.Games.Update(body);
+            // await context.SaveChangesAsync();
+
             _model.BasicAck(ea.DeliveryTag, false);
         };
         _model.BasicConsume(_rabbitOptions.GameUpdateQueue, false, consumer);
