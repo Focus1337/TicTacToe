@@ -21,6 +21,10 @@ public class Game
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
+    public Guid PlayerX { get; set; }
+
+    public Guid PlayerO { get; set; }
+
     public GameStatus Status { get; set; } = GameStatus.New;
 
     public Figure C00 { get; set; } = Figure.None;

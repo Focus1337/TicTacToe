@@ -51,7 +51,11 @@ builder.Services.AddAuthentication(options =>
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddJwtBearer(options => options.ClaimsIssuer = JwtBearerDefaults.AuthenticationScheme);
+    .AddJwtBearer(options => options.ClaimsIssuer = JwtBearerDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = new PathString("/Auth/Login");
+    });
 
 builder.Services.AddAuthorization();
 builder.Services.AddDbContext<PostgresDbContext>(options =>
