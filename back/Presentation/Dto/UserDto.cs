@@ -9,4 +9,7 @@ public class UserDto
 
     [Required] 
     public required string Password { get; set; }
+
+    [Required]
+    public required string RepeatPassword { get; set; }
 }

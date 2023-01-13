@@ -32,6 +32,9 @@ public class AuthController : ControllerBase
         {
             Username = userDto.Username,
         };
+
+        if (userDto.Password != userDto.RepeatPassword) 
+            return BadRequest();
         
         var result = await _userManager.CreateAsync(user, userDto.Password);
         return result.Succeeded
