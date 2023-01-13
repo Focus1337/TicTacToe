@@ -29,17 +29,21 @@ public class TicTacController : ControllerBase
 
     public record GetGamesDto(int Page);
 
+    public record GamesListDto(List<GameDto> Games, bool HasMore);
+
     [HttpGet, OpenIdDictAuthorize]
     public async Task<IActionResult> GetGames([FromQuery]GetGamesDto getGamesDto)
     {
         const int pageLength = 5;
-        return Ok(await _postgresDbContext.Games
+        var games = await _postgresDbContext.Games
             .Where(g => g.Status != GameStatus.Finished)
             .OrderBy(g => g.Status)
             .Skip(getGamesDto.Page * pageLength)
             .Take(pageLength)
             .Select(g => new GameDto(g))
-            .ToListAsync());
+            .ToListAsync();
+        var hasMore = await _postgresDbContext.Games.CountAsync() > pageLength * (getGamesDto.Page + 1);
+        return Ok(new GamesListDto(games, hasMore));
     }
 
     [HttpDelete]
