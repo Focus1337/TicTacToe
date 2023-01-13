@@ -9,6 +9,8 @@ using Presentation.Entities;
 using Presentation.RabbitMq;
 using Presentation.SignalR.Hubs;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

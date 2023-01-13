@@ -27,6 +27,8 @@ public class Game
 
     public GameStatus Status { get; set; } = GameStatus.New;
 
+    public DateTime CreatedDateTime { get; set; } = DateTime.Now;
+
     public Figure C00 { get; set; } = Figure.None;
     public Figure C01 { get; set; } = Figure.None;
     public Figure C02 { get; set; } = Figure.None;

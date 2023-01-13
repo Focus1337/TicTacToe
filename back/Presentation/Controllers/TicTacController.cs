@@ -36,7 +36,8 @@ public class TicTacController : ControllerBase
         const int pageLength = 5;
         var games = await _postgresDbContext.Games
             .Where(g => g.Status != GameStatus.Finished)
-            .OrderBy(g => g.Status)
+            .OrderBy(g => g.CreatedDateTime)
+            .ThenBy(g => g.Status)
             .Skip(getGamesDto.Page * pageLength)
             .Take(pageLength)
             .Select(g => new GameDto(g))
