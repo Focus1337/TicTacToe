@@ -33,7 +33,7 @@ builder.Services.AddDbContext<PostgresDbContext>(options =>
             action => action.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName));
         options.UseOpenIddict();
     })
-    .AddIdentity<User, IdentityRole>(options => options.User.RequireUniqueEmail = true)
+    .AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<PostgresDbContext>()
     .AddDefaultTokenProviders();
 
@@ -41,8 +41,6 @@ builder.Services.Configure<IdentityOptions>(options =>
 {
     options.ClaimsIdentity.UserNameClaimType = OpenIddictConstants.Claims.Name;
     options.ClaimsIdentity.UserIdClaimType = OpenIddictConstants.Claims.Subject;
-    options.ClaimsIdentity.RoleClaimType = OpenIddictConstants.Claims.Role;
-    options.ClaimsIdentity.EmailClaimType = OpenIddictConstants.Claims.Email;
 });
 builder.Services.AddOpenIddict()
     .AddCore(options =>
