@@ -5,7 +5,6 @@ import {Figure, Game, GameStatus} from "../Entities/Game"
 import {whoseMove} from "../Domain/gameDomain";
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {BASE_URL} from "../config";
-import {WhoWon} from "./GameEnd";
 import axios from "../axios";
 
 export const TicTacGame = () => {
@@ -17,6 +16,7 @@ export const TicTacGame = () => {
         id: id || '',
         status: GameStatus.New
     });
+    const [winner, setWinner] = useState<Figure>(Figure.None);
     const [connection, setConnection] = useState<null | HubConnection>(null);
 
     useEffect(() => {
@@ -38,7 +38,7 @@ export const TicTacGame = () => {
                         console.log(game);
                     });
                     connection.on("GameFinish", (winner: Figure) => {
-                        navigate(`/gameEnd/${winner === Figure.None ? WhoWon.Tie : winner === (figure === 'x' ? Figure.X : Figure.O) ? WhoWon.Me : WhoWon.Opponent}`)
+                        setWinner(winner);
                     })
                     if (id) {
                         const userId = (await axios.get('User/Me')).data;
@@ -56,20 +56,22 @@ export const TicTacGame = () => {
     const yourMove = whoseMove(game) === figure;
 
     const onPlaceFigure = (x: number, y: number, current: Figure) => {
-        console.log(current, yourMove, game.playerX, game.playerO)
-        console.log(current === Figure.None && yourMove && game.playerX && game.playerO)
         if (current === Figure.None && yourMove && game.playerX && game.playerO) {
             const userId = localStorage.getItem('userId');
-            console.log(x, y, id, userId);
             connection?.send("PlaceFigure", x, y, id, userId).catch(e => console.log(e));
         }
     }
 
+    const onRestartGame = () => {
+        connection?.send('Restart', game.id);
+    }
+
     return (
         <>
-            <p style={{fontSize: '80px'}}>{figure ? `you are playing: ${figure}` : `plays ${whoseMove(game)}`}</p>
+            {game.status !== GameStatus.Finished &&
+                <p style={{fontSize: '80px'}}>{figure ? `you are playing: ${figure}` : `plays ${whoseMove(game)}`}</p>}
             <br/>
-            {figure && (yourMove ? 'Your move' : 'Wait for the opponent\'s move')}
+            {figure && game.status !== GameStatus.Finished && (yourMove ? 'Your move' : 'Wait for the opponent\'s move')}
             <br/>
             <br/>
             <div style={{
@@ -77,12 +79,19 @@ export const TicTacGame = () => {
                 gridTemplateColumns: "1fr 1fr 1fr",
             }
             }>
-                {game.cells.map((arr, x) => arr.map((f, y) => (
-                    <Cell key={`${x}${y}`}
-                          onPlaceFigure={() => onPlaceFigure(x, y, f)}
-                          figure={f}/>)
-                ))}
+                {game.status === GameStatus.Finished
+                    ? <p style={{fontSize: '80px'}}>{winner === Figure.None
+                        ? 'Tie'
+                        : figure
+                            ? winner === (figure === 'x' ? Figure.X : Figure.O) ? 'You won' : 'You lost'
+                            : `${winner === Figure.X ? 'X' : 'O'} won`}</p>
+                    : game.cells.map((arr, x) => arr.map((f, y) => (
+                        <Cell key={`${x}${y}`}
+                              onPlaceFigure={() => onPlaceFigure(x, y, f)}
+                              figure={f}/>)
+                    ))}
             </div>
+            {figure && game.status === GameStatus.Finished && <button onClick={onRestartGame}>Restart game</button>}
         </>
     );
 }

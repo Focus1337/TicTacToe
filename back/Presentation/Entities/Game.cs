@@ -94,4 +94,12 @@ public class Game
             }
         }
     }
+
+    public void Restart()
+    {
+        Status = GameStatus.Started;
+        for (var f = 0; f < 3; ++f)
+        for (var s = 0; s < 3; ++s)
+            this[f, s] = Figure.None;
+    }
 }

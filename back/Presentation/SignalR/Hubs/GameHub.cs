@@ -119,4 +119,18 @@ public class GameHub : Hub<IGameClient>
         _dbContext.Games.Update(game);
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task Restart(Guid gameId)
+    {
+        var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
+        if (game is { Status: GameStatus.Finished })
+        {
+            game.Restart();
+
+            await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
+            
+            _dbContext.Games.Update(game);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
 }
