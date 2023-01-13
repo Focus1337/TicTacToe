@@ -21,7 +21,7 @@ var dbOptions = builder.Configuration.GetSection(DbOptions.DbConfiguration).Get<
 services.AddSingleton(new ConnectionFactory
 {
     HostName = rabbitOptions!.HostName,
-    // DispatchConsumersAsync = true
+    DispatchConsumersAsync = true
 });
 
 services.AddSingleton<GameUpdateConsumer>();

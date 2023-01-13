@@ -1,23 +1,23 @@
 ﻿using System.Text;
 using System.Text.Json;
-using EventBusHandler.Data;
-using EventBusHandler.Entities;
-using EventBusHandler.Options;
+using MessageReceiverAndDbWriter.Data;
+using MessageReceiverAndDbWriter.Entities;
+using MessageReceiverAndDbWriter.Options;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace EventBusHandler.RabbitMq;
+namespace MessageReceiverAndDbWriter.RabbitMq;
 
-public class GameUpdateConsumer
+public class MessagesConsumer
 {
     private readonly IConnection? _connection;
     private readonly IModel _model;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<GameUpdateConsumer> _logger;
+    private readonly ILogger<MessagesConsumer> _logger;
     private readonly RabbitOptions _rabbitOptions;
 
-    public GameUpdateConsumer(IServiceProvider serviceProvider, ILogger<GameUpdateConsumer> logger,
+    public MessagesConsumer(IServiceProvider serviceProvider, ILogger<MessagesConsumer> logger,
         IOptions<RabbitOptions> rabbitOptions, ConnectionFactory connectionFactory)
     {
         _serviceProvider = serviceProvider;
@@ -28,36 +28,37 @@ public class GameUpdateConsumer
         _model = _connection.CreateModel();
     }
 
-    public void StartConsumingGameUpdateCommands()
+    public void StartConsumingMessages()
     {
-        _model.QueueDeclare(queue: _rabbitOptions.GameUpdateQueue, durable: true, exclusive: false,
+        _model.QueueDeclare(queue: _rabbitOptions.MessagesQueue, durable: true, exclusive: false,
             autoDelete: false,
             arguments: null);
+
+        _logger.LogInformation("Connection opened");
 
         var consumer = new AsyncEventingBasicConsumer(_model);
         consumer.Received += async (_, ea) =>
         {
             var content = Encoding.UTF8.GetString(ea.Body.ToArray());
-            var body = JsonSerializer.Deserialize<Game>(content);
-            if (body is null) return;
+            var body = JsonSerializer.Deserialize<Message>(content);
+            if (body is null)
+            {
+                _logger.LogError("Broken message: \'{Content}\'", content);
+                return;
+            }
 
-            _logger.LogInformation(@"[{TimeNow}] New game update: {GameId} | Status: {Status} | CreatedAt: {CreatedAt}",
-                DateTime.Now, body.Id, body.Status, body.CreatedDateTime);
+            _logger.LogInformation("New message: {BodyUserName} says \'{BodyText}\'", body.UserName, body.Text);
 
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            if (await context.Games.FindAsync(body.Id) is { } game)
-            {
-                context.Entry(game).CurrentValues.SetValues(body);
-
-                await context.SaveChangesAsync();
-            }
+            await context.Messages.AddAsync(body);
+            await context.SaveChangesAsync();
 
             _model.BasicAck(ea.DeliveryTag, false);
             await Task.Yield();
         };
-        _model.BasicConsume(_rabbitOptions.GameUpdateQueue, false, consumer);
+        _model.BasicConsume(_rabbitOptions.MessagesQueue, false, consumer);
     }
 
     public void Dispose()

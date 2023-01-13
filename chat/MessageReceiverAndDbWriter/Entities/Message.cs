@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MessageReceiverAndDbWriter;
+namespace MessageReceiverAndDbWriter.Entities;
 
 public class Message
 {

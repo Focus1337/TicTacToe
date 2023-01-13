@@ -1,53 +1,32 @@
-﻿using System.Text;
-using System.Text.Json;
-using MessageReceiverAndDbWriter;
+using MessageReceiverAndDbWriter.Data;
+using MessageReceiverAndDbWriter.HostedServices;
+using MessageReceiverAndDbWriter.Options;
+using MessageReceiverAndDbWriter.RabbitMq;
+using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
-for (;;)
+var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
+
+services
+    .Configure<DbOptions>(
+        builder.Configuration.GetSection(DbOptions.DbConfiguration))
+    .Configure<RabbitOptions>(
+        builder.Configuration.GetSection(RabbitOptions.RabbitConfiguration));
+
+var rabbitOptions = builder.Configuration.GetSection(RabbitOptions.RabbitConfiguration).Get<RabbitOptions>();
+var dbOptions = builder.Configuration.GetSection(DbOptions.DbConfiguration).Get<DbOptions>();
+
+services.AddSingleton(new ConnectionFactory
 {
-    IConnection? connection = null;
-    try
-    {
-        var factory = new ConnectionFactory { HostName = "rabbitmq" };
-        connection = factory.CreateConnection();
-        var channel = connection.CreateModel();
-        channel.QueueDeclare(queue: "messages", durable: true, exclusive: false, autoDelete: false, arguments: null);
+    HostName = rabbitOptions!.HostName,
+    DispatchConsumersAsync = true
+});
 
-        Console.WriteLine("Connection opened");
+services.AddSingleton<MessagesConsumer>();
+services.AddHostedService<GameUpdateBusHandler>();
+services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbOptions!.ConnectionString));
 
-        var context = new AppDbContext();
+var app = builder.Build();
 
-
-        var consumer = new EventingBasicConsumer(channel);
-        consumer.Received += (ch, ea) =>
-        {
-            var content = Encoding.UTF8.GetString(ea.Body.ToArray());
-            var message = JsonSerializer.Deserialize<Message>(content);
-            if (message is null)
-            {
-                Console.WriteLine($"Broken message: '{content}'");
-                return;
-            }
-
-            Console.WriteLine($"New message: {message.UserName} says '{message.Text}'");
-            context.Messages.Add(message);
-            context.SaveChanges();
-            channel.BasicAck(ea.DeliveryTag, false);
-        };
-        for (;;)
-        {
-            channel.BasicConsume("messages", false, consumer);
-        }
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine(e.Message);
-    }
-    finally
-    {
-        Console.WriteLine("Closing connection");
-        connection?.Close();
-        await Task.Delay(100);
-    }
-}
+app.Run();
