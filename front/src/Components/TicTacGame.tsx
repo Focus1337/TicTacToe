@@ -19,8 +19,9 @@ export const TicTacGame = () => {
     const [connection, setConnection] = useState<null | HubConnection>(null);
 
     useEffect(() => {
+        const jwt = localStorage.getItem('jwt')!;
         const connect = new HubConnectionBuilder()
-            .withUrl(BASE_URL + 'game')
+            .withUrl(BASE_URL + 'game', { accessTokenFactory: () => jwt })
             .withAutomaticReconnect()
             .build();
 
@@ -39,7 +40,7 @@ export const TicTacGame = () => {
                         navigate(`/gameEnd/${winner === Figure.None ? WhoWon.Tie : winner === (figure === 'x' ? Figure.X : Figure.O) ? WhoWon.Me : WhoWon.Opponent}`)
                     })
                     if (id)
-                        connection.invoke("Enter", id);
+                        connection.invoke(figure === undefined ? "Watch" : "Join", id);
                 })
                 .catch(error => console.log('Connection failed: ', error));
         }

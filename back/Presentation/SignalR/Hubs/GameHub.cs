@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Context;
@@ -24,14 +23,20 @@ public class GameHub : Hub<IGameClient>
         _userManager = userManager;
     }
 
-    [Authorize]
+    [OpenIdDictAuthorize]
     public async Task Join(Guid gameId)
     {
         var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
+        var qwe = await _userManager.GetUserAsync(Context.User!);
+        Console.WriteLine(qwe?.Id);
 
         if (game is { Status: GameStatus.New } and ({ PlayerO: null } or { PlayerX: null }))
         {
             var user = await _userManager.GetUserAsync(Context.User!);
+            if (game.PlayerO is null)
+                game.PlayerO = user!.Id;
+            else
+                game.PlayerX = user!.Id;
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
             await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
         }
@@ -48,23 +53,40 @@ public class GameHub : Hub<IGameClient>
         }
     }
 
-    public async Task PlaceFigure(int first, int second, Guid gameId, Figure figure)
+    [OpenIdDictAuthorize]
+    public async Task PlaceFigure(int first, int second, Guid gameId)
     {
         var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
 
-        if (game is null) return;
+        if (game is null or { Status: GameStatus.Finished } || game[first, second] != Figure.None) return;
 
-        if (game[first, second] != Figure.None || GameDomain.WhoseMove(game) != figure)
-            return;
+        var user = await _userManager.GetUserAsync(Context.User!);
+        var whoseMove = GameDomain.WhoseMove(game);
+        switch (whoseMove)
+        {
+            case Figure.X:
+                if (game.PlayerX != user!.Id)
+                    return;
+                break;
+            case Figure.O:
+                if (game.PlayerO != user!.Id)
+                    return;
+                break;
+            case Figure.None:
+            default:
+                return;
+        }
 
-        game[first, second] = figure;
-        await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
+        game[first, second] = whoseMove;
 
         if (GameDomain.IsGameFinished(game))
         {
+            game.Status = GameStatus.Finished;
             var winner = GameDomain.IsSomeoneWon(game);
             await Clients.Group(gameId.ToString()).GameFinish(winner);
         }
+
+        await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
 
         //_gameUpdateProducer.ProduceGameUpdateCommand(game);
         _dbContext.Games.Update(game);

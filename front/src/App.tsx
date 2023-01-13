@@ -40,6 +40,7 @@ function App() {
                         <Route path={'/getIn'} element={<GetIn/>}/>
                         <Route path={'/gameEnd/:winner'} element={<GameEnd/>}/>
                         <Route path={"/:figure/:id"} element={<TicTacGame/>}/>
+                        <Route path={"/:id"} element={<TicTacGame/>}/>
                     </Routes>
                 </div>
             </BrowserRouter>

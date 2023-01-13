@@ -7,7 +7,6 @@ public class GameDto
     public Guid Id { get; set; }
     public Figure[][] Cells { get; set; }
     public GameStatus Status { get; set; }
-
     public Guid? PlayerX { get; set; }
     public Guid? PlayerO { get; set; }
 
@@ -17,6 +16,9 @@ public class GameDto
     {
         this.Id = game.Id;
         this.Status = game.Status;
+        this.PlayerX = game.PlayerX;
+        this.PlayerO = game.PlayerO;
+
         this.Cells = new Figure[3][];
         for (var f = 0; f < 3; ++f)
             this.Cells[f] = new Figure[3];

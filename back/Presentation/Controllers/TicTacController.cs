@@ -17,7 +17,7 @@ public class TicTacController : ControllerBase
         _postgresDbContext = postgresDbContext;
     }
 
-    [HttpPost]
+    [HttpPost, OpenIdDictAuthorize]
     public async Task<IActionResult> CreateGame()
     {
         var game = new Game();

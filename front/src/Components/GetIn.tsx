@@ -7,10 +7,10 @@ export const GetIn = () => {
     const navigate = useNavigate();
     const onGetInExisting = () => {
         if (id.current)
-            navigate(`o/${id.current.value}`);
+            navigate(`/o/${id.current.value}`);
     }
     const onCreateNew = () => {
-        axios.post('http://localhost:81/TicTac/').then(res => navigate(`x/${res.data}`));
+        axios.post('http://localhost:81/TicTac/').then(res => navigate(`/x/${res.data}`));
     }
 
     return (
