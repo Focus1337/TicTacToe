@@ -133,4 +133,9 @@ public class GameHub : Hub<IGameClient>
             await _dbContext.SaveChangesAsync();
         }
     }
+
+    public async Task GoBack(Guid gameId, Guid userId)
+    {
+        
+    }
 }

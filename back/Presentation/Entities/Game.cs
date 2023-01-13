@@ -26,6 +26,10 @@ public class Game
     public Guid? PlayerO { get; set; }
 
     public GameStatus Status { get; set; } = GameStatus.New;
+    
+    public string? CreatorName { get; set; }
+    
+    public int MaxRating { get; set; }
 
     public DateTime CreatedDateTime { get; set; } = DateTime.Now;
 

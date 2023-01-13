@@ -11,13 +11,11 @@ export const Login = () => {
     const onLogin = async () => {
         const usernameData = username.current?.value;
         const pass1Data = pass.current?.value;
-        if(!usernameData || !pass1Data)
-        {
+        if (!usernameData || !pass1Data) {
             alert('fill all fields');
             return;
         }
-        if(usernameData.length < 6)
-        {
+        if (usernameData.length < 6) {
             alert('username should be at least 6 symbols length');
             return;
         }
@@ -33,9 +31,12 @@ export const Login = () => {
         console.log(res.data)
         const jwt = res.data.access_token;
         localStorage.setItem('jwt', jwt);
+        const userData = (await axios.get('User/Me', {headers: {authorization: `Bearer ${jwt}`}})).data;
+        localStorage.setItem('userId', userData.id);
+        localStorage.setItem('userRating', userData.rating);
         window.location.replace('/');
     }
-    
+
     const onGoToRegister = () => {
         navigate('/register');
     }

@@ -27,13 +27,37 @@ export const GamesList = () => {
             navigate(`/${game.playerX ? 'o' : 'x'}/${game.id}`);
     }
 
+    const userId = localStorage.getItem('userId');
+    const onGoBack = (game: Game) => {
+        const figure = game.playerX === userId ? 'x' : 'o';
+        navigate(`/${figure}/${game.id}`);
+    }
+
+    const userRating = Number.parseInt(localStorage.getItem('userRating') || '0');
+
     return (
         <InfiniteScroll pageStart={0} loadMore={onLoadMore} hasMore={hasMore}>
-            {games?.map(g => <div key={g.id} style={{display: 'flex'}}>
-                <p style={{width: '300px'}}>{g.id}</p>
-                <button onClick={() => onWatch(g.id)}>Watch</button>
-                {g.status === GameStatus.New && <button onClick={() => onJoin(g)}>Join</button>}
-            </div>)}
+            {games?.map(g => {
+                const isParticipant = g.playerX === userId || g.playerO == userId;
+
+                const date = g.createdDateTime;
+                const formattedDate = date.slice(0, date.indexOf('.')).replace('T', ' ');
+                
+                return <div key={g.id} style={{display: 'flex', marginBottom: '20px'}}>
+                    <p style={{width: '400px', margin: '0'}}>{g.id}</p>
+                    <p style={{width: '200px', margin: '0'}}>{g.maxRating}</p>
+                    <p style={{width: '200px', margin: '0'}}>{g.creatorName}</p>
+                    <p style={{width: '200px', margin: '0'}}>{formattedDate}</p>
+                    <button onClick={() => onWatch(g.id)} disabled={isParticipant}>Watch</button>
+                    <button onClick={() => onJoin(g)}
+                            disabled={g.status !== GameStatus.New || g.maxRating < userRating || isParticipant}>
+                        Join
+                    </button>
+                    <button onClick={() => onGoBack(g)} disabled={!isParticipant}>
+                        Go back to
+                    </button>
+                </div>
+            })}
         </InfiniteScroll>
     )
 }

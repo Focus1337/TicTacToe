@@ -12,8 +12,11 @@ export enum GameStatus {
 
 export interface Game {
     id: string;
+    creatorName?: string;
+    maxRating: number;
     cells: Figure[][];
     status: GameStatus;
     playerX?: string;
     playerO?: string;
+    createdDateTime: string;
 }

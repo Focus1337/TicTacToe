@@ -20,14 +20,16 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("Me")]
-    public async Task<Guid> Me()
+    public async Task<IActionResult> Me()
     {
         var identity = HttpContext.User.Identity;
 
         if (identity?.Name is null)
             throw new Exception("User is not logged in");
 
-        return (await _userManager.FindByNameAsync(identity.Name) ?? throw new Exception("User name not found")).Id;
+        var user = await _userManager.FindByNameAsync(identity.Name) ?? throw new Exception("User name not found");
+
+        return Ok(new { user.Id, user.Rating });
     }
 
     [HttpGet("rating")]

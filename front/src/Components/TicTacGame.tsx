@@ -1,5 +1,5 @@
 ﻿import {useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {useParams} from "react-router-dom";
 import {Cell} from "./Cell";
 import {Figure, Game, GameStatus} from "../Entities/Game"
 import {whoseMove} from "../Domain/gameDomain";
@@ -9,12 +9,13 @@ import axios from "../axios";
 
 export const TicTacGame = () => {
     const {figure, id} = useParams();
-    const navigate = useNavigate();
 
     const [game, setGame] = useState<Game>({
         cells: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
         id: id || '',
-        status: GameStatus.New
+        status: GameStatus.New,
+        maxRating: 0,
+        createdDateTime: '',
     });
     const [winner, setWinner] = useState<Figure>(Figure.None);
     const [connection, setConnection] = useState<null | HubConnection>(null);
@@ -41,8 +42,7 @@ export const TicTacGame = () => {
                         setWinner(winner);
                     })
                     if (id) {
-                        const userId = (await axios.get('User/Me')).data;
-                        localStorage.setItem('userId', userId);
+                        const userId = localStorage.getItem('userId');
                         if (figure === undefined)
                             connection.invoke("Watch", id);
                         else

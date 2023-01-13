@@ -7,6 +7,8 @@ public class GameDto
     public Guid Id { get; set; }
     public Figure[][] Cells { get; set; }
     public GameStatus Status { get; set; }
+    public string? CreatorName { get; set; }
+    public int MaxRating { get; set; }
     public Guid? PlayerX { get; set; }
     public Guid? PlayerO { get; set; }
 
@@ -18,6 +20,9 @@ public class GameDto
         this.Status = game.Status;
         this.PlayerX = game.PlayerX;
         this.PlayerO = game.PlayerO;
+        this.CreatorName = game.CreatorName;
+        this.MaxRating = game.MaxRating;
+        this.CreatedDateTime = game.CreatedDateTime;
 
         this.Cells = new Figure[3][];
         for (var f = 0; f < 3; ++f)
