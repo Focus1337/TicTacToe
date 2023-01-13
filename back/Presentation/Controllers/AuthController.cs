@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
         _signInManager = signInManager;
     }
 
-    [HttpPost]
+    [HttpPost("Register")]
     public async Task<IActionResult> Register(UserDto userDto)
     {
         if (!ModelState.IsValid) return BadRequest();
@@ -43,14 +43,14 @@ public class AuthController : ControllerBase
                 error => error.Description)!));
     }
 
-    [HttpPost]
+    [HttpPost("Logout")]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
         return Ok();
     }
 
-    [HttpPost, Consumes("application/x-www-form-urlencoded")]
+    [HttpPost("Login"), Consumes("application/x-www-form-urlencoded")]
     public async Task<IActionResult> Login([FromForm] UserDto userDto)
     {
         if (!ModelState.IsValid) return BadRequest();
