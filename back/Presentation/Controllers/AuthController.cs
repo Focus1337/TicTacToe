@@ -52,7 +52,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Login"), Consumes("application/x-www-form-urlencoded")]
-    public async Task<IActionResult> Login([FromForm] UserDto userDto)
+    public async Task<IActionResult> Login([FromForm] LoginUserDto userDto)
     {
         if (!ModelState.IsValid) return BadRequest();
         var request = HttpContext.GetOpenIddictServerRequest() ?? throw new Exception("OpenIdDict config is wrong");

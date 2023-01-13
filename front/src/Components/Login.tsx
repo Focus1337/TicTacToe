@@ -1,5 +1,6 @@
 ﻿import {useNavigate} from "react-router-dom";
 import {useRef} from "react";
+import axios from "../axios";
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -20,7 +21,17 @@ export const Login = () => {
             alert('username should be at least 6 symbols length');
             return;
         }
-        const jwt = 'qwe';
+        const res = await axios.post('Auth/Login', {
+            username: usernameData,
+            password: pass1Data,
+            grant_type: 'password'
+        }, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        });
+        console.log(res.data)
+        const jwt = res.data.access_token;
         localStorage.setItem('jwt', jwt);
         window.location.replace('/');
     }
