@@ -13,7 +13,7 @@ services:
             - './back/Presentation/:/app/Presentation'
         depends_on:
             - rabbit
-            - mongo
+            - postgres
     
     eventbushandler:
         build:
@@ -27,7 +27,7 @@ services:
             - "./back/EventBusHandler/:/app/EventBusHandler"
         depends_on:
             - rabbit
-            - mongo
+            - postgres
     
     front:
         build:
