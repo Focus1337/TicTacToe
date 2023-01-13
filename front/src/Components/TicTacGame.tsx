@@ -20,9 +20,8 @@ export const TicTacGame = () => {
     const [connection, setConnection] = useState<null | HubConnection>(null);
 
     useEffect(() => {
-        const jwt = localStorage.getItem('jwt')!;
         const connect = new HubConnectionBuilder()
-            .withUrl(BASE_URL + 'game', { accessTokenFactory: () => jwt })
+            .withUrl(BASE_URL + 'game')
             .withAutomaticReconnect()
             .build();
 
@@ -36,16 +35,18 @@ export const TicTacGame = () => {
                 .then(async () => {
                     connection.on('UpdateGame', (game: Game) => {
                         setGame(game);
+                        console.log(game);
                     });
                     connection.on("GameFinish", (winner: Figure) => {
                         navigate(`/gameEnd/${winner === Figure.None ? WhoWon.Tie : winner === (figure === 'x' ? Figure.X : Figure.O) ? WhoWon.Me : WhoWon.Opponent}`)
                     })
                     if (id) {
                         const userId = (await axios.get('User/Me')).data;
-                        console.log(userId);
-                        localStorage.setItem("userId", userId);
-                        
-                        connection.invoke(figure === undefined ? "Watch" : "Join", id);
+                        localStorage.setItem('userId', userId);
+                        if (figure === undefined)
+                            connection.invoke("Watch", id);
+                        else
+                            connection.invoke("Join", id, userId, (figure === 'x' ? Figure.X : Figure.O));
                     }
                 })
                 .catch(error => console.log('Connection failed: ', error));
@@ -56,8 +57,10 @@ export const TicTacGame = () => {
 
     const onPlaceFigure = useMemo(() =>
         (x: number, y: number, current: Figure) => {
-            if (current === Figure.None && yourMove)
-                connection?.send("PlaceFigure", x, y, id, figure === 'x' ? 1 : 2).catch(e => console.log(e));
+            if (current === Figure.None && yourMove) {
+                const userId = localStorage.getItem('userId');
+                connection?.send("PlaceFigure", x, y, id, userId).catch(e => console.log(e));
+            }
         }, [yourMove, connection]);
 
     return (

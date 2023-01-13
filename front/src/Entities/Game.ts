@@ -14,4 +14,6 @@ export interface Game {
     id: string;
     cells: Figure[][];
     status: GameStatus;
+    playerX?: string;
+    playerO?: string;
 }

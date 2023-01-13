@@ -23,22 +23,33 @@ public class GameHub : Hub<IGameClient>
         _userManager = userManager;
     }
 
-    [OpenIdDictAuthorize]
-    public async Task Join(Guid gameId)
+    public async Task Join(Guid gameId, Guid userId, Figure player)
     {
         var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
-        var qwe = await _userManager.GetUserAsync(Context.User!);
-        Console.WriteLine(qwe?.Id);
 
         if (game is { Status: GameStatus.New } and ({ PlayerO: null } or { PlayerX: null }))
         {
-            var user = await _userManager.GetUserAsync(Context.User!);
-            if (game.PlayerO is null)
-                game.PlayerO = user!.Id;
-            else
-                game.PlayerX = user!.Id;
+            if (game.PlayerX != userId && game.PlayerO != userId)
+            {
+                switch (player)
+                {
+                    case Figure.X:
+                        game.PlayerX ??= userId;
+                        break;
+                    case Figure.O:
+                        game.PlayerO ??= userId;
+                        break;
+                    case Figure.None:
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(player), player, null);
+                }
+            }
+
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
             await Clients.Group(gameId.ToString()).UpdateGame(new GameDto(game));
+
+            _dbContext.Games.Update(game);
+            await _dbContext.SaveChangesAsync();
         }
     }
 
@@ -53,23 +64,21 @@ public class GameHub : Hub<IGameClient>
         }
     }
 
-    [OpenIdDictAuthorize]
-    public async Task PlaceFigure(int first, int second, Guid gameId)
+    public async Task PlaceFigure(int first, int second, Guid gameId, Guid userId)
     {
         var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
 
         if (game is null or { Status: GameStatus.Finished } || game[first, second] != Figure.None) return;
-
-        var user = await _userManager.GetUserAsync(Context.User!);
+        
         var whoseMove = GameDomain.WhoseMove(game);
         switch (whoseMove)
         {
             case Figure.X:
-                if (game.PlayerX != user!.Id)
+                if (game.PlayerX != userId)
                     return;
                 break;
             case Figure.O:
-                if (game.PlayerO != user!.Id)
+                if (game.PlayerO != userId)
                     return;
                 break;
             case Figure.None:
