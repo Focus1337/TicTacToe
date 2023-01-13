@@ -42,18 +42,28 @@ export const GamesList = () => {
 
                 const date = g.createdDateTime;
                 const formattedDate = date.slice(0, date.indexOf('.')).replace('T', ' ');
-                
+
                 return <div key={g.id} style={{display: 'flex', marginBottom: '20px'}}>
                     <p style={{width: '400px', margin: '0'}}>{g.id}</p>
                     <p style={{width: '200px', margin: '0'}}>{g.maxRating}</p>
                     <p style={{width: '200px', margin: '0'}}>{g.creatorName}</p>
                     <p style={{width: '200px', margin: '0'}}>{formattedDate}</p>
-                    <button onClick={() => onWatch(g.id)} disabled={isParticipant}>Watch</button>
+                    <button onClick={() => onWatch(g.id)}
+                            disabled={isParticipant}
+                            style={{marginRight: '30px', color: isParticipant ? 'grey' : 'white'}}>
+                        Watch
+                    </button>
                     <button onClick={() => onJoin(g)}
-                            disabled={g.status !== GameStatus.New || g.maxRating < userRating || isParticipant}>
+                            disabled={g.status !== GameStatus.New || g.maxRating < userRating || isParticipant}
+                            style={{
+                                marginRight: '30px',
+                                color: (g.status !== GameStatus.New || g.maxRating < userRating || isParticipant) ? 'grey' : 'white'
+                            }}>
                         Join
                     </button>
-                    <button onClick={() => onGoBack(g)} disabled={!isParticipant}>
+                    <button onClick={() => onGoBack(g)}
+                            disabled={!isParticipant}
+                            style={{marginRight: '30px', color: !isParticipant ? 'grey' : 'white'}}>
                         Go back to
                     </button>
                 </div>
