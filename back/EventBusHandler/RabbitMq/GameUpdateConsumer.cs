@@ -3,7 +3,6 @@ using System.Text.Json;
 using EventBusHandler.Data;
 using EventBusHandler.Entities;
 using EventBusHandler.Options;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -48,18 +47,12 @@ public class GameUpdateConsumer
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // var game = await context.Games.FirstOrDefaultAsync(x => x.Id == body.Id);
-
-            // game.
             if (await context.Games.FindAsync(body.Id) is { } game)
             {
                 context.Entry(game).CurrentValues.SetValues(body);
 
                 await context.SaveChangesAsync();
             }
-
-            // context.Games.Update(body);
-            // await context.SaveChangesAsync();
 
             _model.BasicAck(ea.DeliveryTag, false);
         };
