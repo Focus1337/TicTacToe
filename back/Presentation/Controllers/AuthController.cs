@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
@@ -32,9 +33,12 @@ public class AuthController : ControllerBase
         {
             UserName = userDto.Username,
         };
+        
+        if (await _userManager.FindByNameAsync(userDto.Username) is not null)
+            return BadRequest("User with same Name already exists");
 
         if (userDto.Password != userDto.RepeatPassword) 
-            return BadRequest();
+            return BadRequest("Mismatch of passwords");
         
         var result = await _userManager.CreateAsync(user, userDto.Password);
         Console.WriteLine(result.Errors.FirstOrDefault()?.Description);
