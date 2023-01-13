@@ -60,6 +60,23 @@ services:
             PGDATA: "/var/lib/postgresql/data/pgdata"
         ports:
             - 5432:5432
-        networks:
-            default:
-                
+    
+    chat-back:
+        build:
+            context: ./chat/Back
+        ports:
+            - 82:82
+        volumes:
+            - './chat/Back/:/app/'
+        external_links:
+            - rabbit:rabbitmq
+            - postgres:database
+    
+    chat-event-bus-handler:
+        build:
+            context: ./chat/MessageReceiverAndDbWriter
+        volumes:
+            - './chat/MessageReceiverAndDbWriter/:/app/'
+        external_links:
+            - rabbit:rabbitmq
+            - postgres:database

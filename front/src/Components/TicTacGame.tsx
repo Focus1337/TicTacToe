@@ -6,6 +6,7 @@ import {whoseMove} from "../Domain/gameDomain";
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {BASE_URL} from "../config";
 import axios from "../axios";
+import Chat from "../chat/Chat/Chat";
 
 export const TicTacGame = () => {
     const {figure, id} = useParams();
@@ -67,31 +68,35 @@ export const TicTacGame = () => {
     }
 
     return (
-        <>
-            {game.status !== GameStatus.Finished &&
-                <p style={{fontSize: '80px'}}>{figure ? `you are playing: ${figure}` : `plays ${whoseMove(game)}`}</p>}
-            <br/>
-            {figure && game.status !== GameStatus.Finished && (yourMove ? 'Your move' : 'Wait for the opponent\'s move')}
-            <br/>
-            <br/>
-            <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-            }
-            }>
-                {game.status === GameStatus.Finished
-                    ? <p style={{fontSize: '80px'}}>{winner === Figure.None
-                        ? 'Tie'
-                        : figure
-                            ? winner === (figure === 'x' ? Figure.X : Figure.O) ? 'You won' : 'You lost'
-                            : `${winner === Figure.X ? 'X' : 'O'} won`}</p>
-                    : game.cells.map((arr, x) => arr.map((f, y) => (
-                        <Cell key={`${x}${y}`}
-                              onPlaceFigure={() => onPlaceFigure(x, y, f)}
-                              figure={f}/>)
-                    ))}
+        <div style={{display: 'flex', height: '97vh'}}>
+            <div>
+                {game.status !== GameStatus.Finished &&
+                    <p style={{fontSize: '80px'}}>{figure ? `you are playing: ${figure}` : `plays ${whoseMove(game)}`}</p>}
+                <br/>
+                {figure && game.status !== GameStatus.Finished && (yourMove ? 'Your move' : 'Wait for the opponent\'s move')}
+                <br/>
+                <br/>
+                <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    width: '300px'
+                }
+                }>
+                    {game.status === GameStatus.Finished
+                        ? <p style={{fontSize: '80px'}}>{winner === Figure.None
+                            ? 'Tie'
+                            : figure
+                                ? winner === (figure === 'x' ? Figure.X : Figure.O) ? 'You won' : 'You lost'
+                                : `${winner === Figure.X ? 'X' : 'O'} won`}</p>
+                        : game.cells.map((arr, x) => arr.map((f, y) => (
+                            <Cell key={`${x}${y}`}
+                                  onPlaceFigure={() => onPlaceFigure(x, y, f)}
+                                  figure={f}/>)
+                        ))}
+                </div>
+                {figure && game.status === GameStatus.Finished && <button onClick={onRestartGame}>Restart game</button>}
             </div>
-            {figure && game.status === GameStatus.Finished && <button onClick={onRestartGame}>Restart game</button>}
-        </>
+            <Chat/>
+        </div>
     );
 }
