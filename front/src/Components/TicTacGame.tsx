@@ -67,7 +67,9 @@ export const TicTacGame = () => {
 
     return (
         <>
-            {yourMove ? 'Your move' : 'Wait for the opponent\'s move'}
+            <p style={{fontSize: '80px'}}>{figure ? `you are playing: ${figure}` : `plays ${whoseMove(game)}`}</p>
+            <br/>
+            {figure && (yourMove ? 'Your move' : 'Wait for the opponent\'s move')}
             <br/>
             <br/>
             <div style={{

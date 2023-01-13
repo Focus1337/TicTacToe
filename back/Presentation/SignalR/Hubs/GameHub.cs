@@ -42,6 +42,9 @@ public class GameHub : Hub<IGameClient>
                 }
             }
 
+            if (game is { Status: GameStatus.New, PlayerX: { }, PlayerO: { } })
+                game.Status = GameStatus.Started;
+
             _dbContext.Games.Update(game);
             await _dbContext.SaveChangesAsync();
         }
@@ -69,7 +72,7 @@ public class GameHub : Hub<IGameClient>
         var game = await _dbContext.Games.FirstOrDefaultAsync(game => game.Id == gameId);
 
         Console.WriteLine(game[first, second]);
-        
+
         if (game is null or { Status: GameStatus.Finished } || game[first, second] != Figure.None) return;
 
         var whoseMove = GameDomain.WhoseMove(game);
@@ -88,6 +91,7 @@ public class GameHub : Hub<IGameClient>
             default:
                 return;
         }
+
         Console.WriteLine(whoseMove);
 
         game[first, second] = whoseMove;

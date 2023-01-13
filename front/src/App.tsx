@@ -5,6 +5,7 @@ import {GameEnd, GetIn, TicTacGame} from './Components';
 import {Register} from "./Components/Register";
 import {Login} from "./Components/Login";
 import {GamesList} from "./Components/GamesList";
+import axios from "./axios";
 
 function App() {
     const onSignOut = () => {
@@ -17,6 +18,9 @@ function App() {
     }
 
     const authorized = !!localStorage.getItem('jwt');
+    const onCreateNew = () => {
+        axios.post('http://localhost:81/TicTac/').then(res => window.location.replace(`/x/${res.data}`));
+    }
 
     return (
         <div className="App">
@@ -24,7 +28,8 @@ function App() {
                 <div style={{justifySelf: 'self-start'}}>
                     {authorized ? (<div style={{display: 'flex', flexDirection: 'row'}}>
                             <button onClick={onSignOut} style={{marginRight: '10px'}}>Sign out</button>
-                            <Link to={'/list'} style={{color: "white"}}>Games list</Link>
+                            <Link to={'/list'} style={{color: "white", marginRight: '10px'}}>Games list</Link>
+                            <button onClick={onCreateNew}>Create new game</button>
                         </div>)
                         : (
                             <button onClick={onGoToLogin}>login</button>
