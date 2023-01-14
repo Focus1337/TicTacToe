@@ -4,6 +4,7 @@ using MessageReceiverAndDbWriter.Data;
 using MessageReceiverAndDbWriter.Entities;
 using MessageReceiverAndDbWriter.Options;
 using Microsoft.Extensions.Options;
+using Polly;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -11,8 +12,8 @@ namespace MessageReceiverAndDbWriter.RabbitMq;
 
 public class MessagesConsumer
 {
-    private readonly IConnection? _connection;
-    private readonly IModel _model;
+    private IConnection? _connection;
+    private IModel _model = null!;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<MessagesConsumer> _logger;
     private readonly RabbitOptions _rabbitOptions;
@@ -24,8 +25,18 @@ public class MessagesConsumer
         _logger = logger;
         _rabbitOptions = rabbitOptions.Value;
 
-        _connection = connectionFactory.CreateConnection();
-        _model = _connection.CreateModel();
+        Policy
+            .Handle<Exception>()
+            .WaitAndRetryForever(retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                onRetry: (exception, retryCount) =>
+                    _logger.LogWarning(
+                        "Connection not established. Exception {ExceptionMessage} | Retry Count {RetryCount}",
+                        exception.Message, retryCount))
+            .Execute(() =>
+            {
+                _connection = connectionFactory.CreateConnection();
+                _model = _connection.CreateModel();
+            });
     }
 
     public void StartConsumingMessages()
