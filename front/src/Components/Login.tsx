@@ -27,7 +27,8 @@ export const Login = () => {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
-        });
+        }).catch(() => alert('Wrong credentials'));
+        if (!res) return;
         console.log(res.data)
         const jwt = res.data.access_token;
         localStorage.setItem('jwt', jwt);

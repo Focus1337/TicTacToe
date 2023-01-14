@@ -6,7 +6,7 @@ import {Register} from "./Components/Register";
 import {Login} from "./Components/Login";
 import {GamesList} from "./Components/GamesList";
 import {Rating} from "./Components/Rating";
-import { CreateGame } from './Components/CreateGame';
+import {CreateGame} from './Components/CreateGame';
 
 function App() {
     const onSignOut = () => {
@@ -20,16 +20,20 @@ function App() {
 
     const authorized = !!localStorage.getItem('jwt');
 
+    if (!authorized && !window.location.href.endsWith('login'))
+        window.location.replace('/login')
+
     return (
         <div className="App">
             <BrowserRouter>
                 <div style={{justifySelf: 'self-start'}}>
-                    {authorized ? (<div style={{display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'center'}}>
-                            <button onClick={onSignOut} style={{marginRight: '20px'}}>Sign out</button>
-                            <Link to={'/list'} style={{color: "white", marginRight: '20px'}}>Games list</Link>
-                            <Link to={'/create'} style={{color: "white", marginRight: '20px'}}>Create new game</Link>
-                            <Link to={'/rating'} style={{color: "white", marginRight: '20px'}}>Rating</Link>
-                        </div>)
+                    {authorized ? (
+                            <div style={{display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'center'}}>
+                                <button onClick={onSignOut} style={{marginRight: '20px'}}>Sign out</button>
+                                <Link to={'/list'} style={{color: "white", marginRight: '20px'}}>Games list</Link>
+                                <Link to={'/create'} style={{color: "white", marginRight: '20px'}}>Create new game</Link>
+                                <Link to={'/rating'} style={{color: "white", marginRight: '20px'}}>Rating</Link>
+                            </div>)
                         : (
                             <button onClick={onGoToLogin}>login</button>
                         )

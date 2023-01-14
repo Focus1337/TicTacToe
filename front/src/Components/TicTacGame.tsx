@@ -1,4 +1,4 @@
-﻿import {useEffect, useState} from "react";
+﻿import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import {Cell} from "./Cell";
 import {Figure, Game, GameStatus} from "../Entities/Game"
@@ -6,7 +6,11 @@ import {whoseMove} from "../Domain/gameDomain";
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {BASE_URL} from "../config";
 import axios from "../axios";
-import Chat from "../chat/Chat/Chat";
+import IMessage from "../chat/entities/IMessage";
+import {v4 as uuidv4} from "uuid";
+import ChatWindow from "../chat/Chat/ChatWindow/ChatWindow";
+import ChatInput from "../chat/Chat/ChatInput/ChatInput";
+import chatAxios from "../chat/chatAxios";
 
 export const TicTacGame = () => {
     const {figure, id} = useParams();
@@ -41,6 +45,9 @@ export const TicTacGame = () => {
                     });
                     connection.on("GameFinish", (winner: Figure) => {
                         setWinner(winner);
+                        const meWin = winner === (figure === 'x' ? Figure.X : figure === 'o' ? Figure.O : null);
+                        if (meWin)
+                            sendMessage(`[win] ${userName} wins`)
                     })
                     if (id) {
                         const userId = localStorage.getItem('userId');
@@ -66,6 +73,58 @@ export const TicTacGame = () => {
     const onRestartGame = () => {
         connection?.send('Restart', game.id);
     }
+
+
+    const [chat, setChat] = useState<IMessage[]>([]);
+    const [chatConnection, setChatConnection] = useState<null | HubConnection>(null);
+
+    useEffect(() => {
+        const connect = new HubConnectionBuilder()
+            .withUrl('http://localhost:82/' + 'chat')
+            .withAutomaticReconnect()
+            .build();
+
+        setChatConnection(connect);
+    }, []);
+
+    useEffect(() => {
+        if (chatConnection) {
+            chatConnection
+                .start()
+                .then(async () => {
+                    chatConnection.on('ReceiveMessage', (message: IMessage) => {
+                        if (message.gameId === game.id)
+                            setChat(prev => [...prev, message]);
+                    });
+                })
+                .catch(error => console.log('Connection failed: ', error));
+        }
+    }, [chatConnection]);
+
+    useEffect(() => {
+        chatAxios.get<IMessage[]>(`api/messages?gameId=${game.id}`).then(res => {
+            console.log(res.data)
+            setChat(res.data)
+        });
+    }, [])
+
+    const userName = localStorage.getItem('userName');
+
+    const sendMessage = async (text: string) => {
+        const chatMessage: IMessage = {
+            id: uuidv4(),
+            userName: userName || '',
+            text: text,
+            dateTime: new Date(),
+            gameId: game.id,
+        };
+
+        if (chatConnection)
+            await chatConnection
+                .send("SendMessage", chatMessage)
+                .catch(() => console.log('Publishing in SignalR failed'));
+    }
+
 
     return (
         <div style={{display: 'flex', height: '97vh'}}>
@@ -96,7 +155,14 @@ export const TicTacGame = () => {
                 </div>
                 {figure && game.status === GameStatus.Finished && <button onClick={onRestartGame}>Restart game</button>}
             </div>
-            <Chat gameId={game.id}/>
+            <>
+                <div className="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden"
+                     style={{color: 'black'}}>
+                    <ChatWindow chat={chat}/>
+                    <hr/>
+                    <ChatInput sendMessage={sendMessage}/>
+                </div>
+            </>
         </div>
     );
 }
